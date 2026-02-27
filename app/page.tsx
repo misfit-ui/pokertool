@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { importHandAction, fetchHandsListAction, saveHandsAction } from "./actions";
+import { saveHandsClient, getHandsListClient } from "@/lib/db-client";
 import { parseHandHistories } from "@/lib/parser";
 import Link from "next/link";
 import { Loader2, Play, Plus, Upload } from "lucide-react";
@@ -32,7 +32,7 @@ export default function HomePage() {
   const loadHands = async () => {
     setFetching(true);
     try {
-      const data = await fetchHandsListAction();
+      const data = await getHandsListClient();
       setHands(data.reverse());
     } catch (e) {
       console.error(e);
@@ -80,9 +80,10 @@ export default function HomePage() {
     const chunkSize = 200;
     for (let i = 0; i < parsedHands.length; i += chunkSize) {
       const chunk = parsedHands.slice(i, i + chunkSize);
-      const result = await saveHandsAction(chunk);
-      if (result.error) {
-        setError(result.error);
+      try {
+        await saveHandsClient(chunk);
+      } catch (err) {
+        setError("Failed to save hands locally.");
         break;
       }
       setUploadProgress(Math.round(((i + chunk.length) / parsedHands.length) * 100));
