@@ -1,0 +1,5 @@
+{
+  "name": "Poker Replayer",
+  "description": "Import and replay CoinPoker hand histories.",
+  "requestFramePermissions": []
+}
