@@ -193,7 +193,7 @@ export function parseHandHistory(raw: string): ParsedHand | null {
           };
       } else if (line.includes("collected")) {
         const match = line.match(
-          /(.+?)\s+collected\s+[^\d]*([\d.,]+)\s+from pot/,
+          /(.+?)\s+collected\s+[^\d]*([\d.,]+)\s+from/,
         );
         if (match)
           action = {

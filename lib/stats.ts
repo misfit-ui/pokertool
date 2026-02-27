@@ -14,6 +14,7 @@ export function calculateHeroStats(hands: ParsedHand[], heroName: string): Playe
   let totalHands = 0;
   let vpipCount = 0;
   let pfrCount = 0;
+  let threeBetOppCount = 0;
   let threeBetCount = 0;
   let netWon = 0;
   let bbWon = 0;
@@ -28,28 +29,37 @@ export function calculateHeroStats(hands: ParsedHand[], heroName: string): Playe
     if (preflop) {
       let heroVpip = false;
       let heroPfr = false;
-      let hero3Bet = false;
-      let raisesBeforeHero = 0;
+      
+      let currentBetLevel = 1; // 1 = BB, 2 = 2-bet (first raise), 3 = 3-bet, etc.
+      let heroFaced3BetOpp = false;
+      let heroDid3Bet = false;
 
       for (const action of preflop.actions) {
-        if (action.type === 'raise') {
-          if (action.player === heroName) {
+        if (action.player === heroName) {
+          if (currentBetLevel === 2 && !heroDid3Bet) {
+            heroFaced3BetOpp = true;
+          }
+          if (action.type === 'raise') {
             heroVpip = true;
             heroPfr = true;
-            if (raisesBeforeHero >= 1) {
-              hero3Bet = true;
+            if (currentBetLevel === 2) {
+              heroDid3Bet = true;
             }
-          } else {
-            raisesBeforeHero++;
+            currentBetLevel++;
+          } else if (action.type === 'call') {
+            heroVpip = true;
           }
-        } else if (action.type === 'call' && action.player === heroName) {
-          heroVpip = true;
+        } else {
+          if (action.type === 'raise') {
+            currentBetLevel++;
+          }
         }
       }
 
       if (heroVpip) vpipCount++;
       if (heroPfr) pfrCount++;
-      if (hero3Bet) threeBetCount++;
+      if (heroFaced3BetOpp) threeBetOppCount++;
+      if (heroDid3Bet) threeBetCount++;
     }
 
     let heroInvested = 0;
@@ -95,7 +105,7 @@ export function calculateHeroStats(hands: ParsedHand[], heroName: string): Playe
     hands: totalHands,
     vpip: totalHands > 0 ? (vpipCount / totalHands) * 100 : 0,
     pfr: totalHands > 0 ? (pfrCount / totalHands) * 100 : 0,
-    threeBet: totalHands > 0 ? (threeBetCount / totalHands) * 100 : 0,
+    threeBet: threeBetOppCount > 0 ? (threeBetCount / threeBetOppCount) * 100 : 0,
     netWon,
     bbWon
   };
