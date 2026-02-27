@@ -16,7 +16,8 @@ export type Action = {
     | "bet"
     | "return"
     | "collect"
-    | "show";
+    | "show"
+    | "dealt";
   player: string;
   amount?: number;
   cards?: string[];
@@ -119,7 +120,10 @@ export function parseHandHistory(raw: string): ParsedHand | null {
       break;
     } else {
       let action: Action | null = null;
-      if (line.includes("posts the ante")) {
+      if (line.startsWith("Dealt to ")) {
+        const match = line.match(/Dealt to (.+?) \[(.*?)\]/);
+        if (match) action = { type: "dealt", player: match[1], cards: match[2].split(" ") };
+      } else if (line.includes("posts the ante")) {
         const match = line.match(/(.+?):\s+posts the ante\s+[^\d]*([\d.,]+)/);
         if (match)
           action = {

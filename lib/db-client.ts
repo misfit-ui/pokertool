@@ -44,6 +44,11 @@ export async function getHandsListClient() {
   }));
 }
 
+export async function getAllHandsClient(): Promise<ParsedHand[]> {
+  const db = await initDB();
+  return db.getAll(STORE_NAME);
+}
+
 export async function getHandClient(id: string): Promise<ParsedHand | undefined> {
   const db = await initDB();
   return db.get(STORE_NAME, id);
